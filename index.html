@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Chosen Palette: "Calm Harmony" (White, Gray-100, Indigo-600) -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive professional dashboard with a top-navigation tab system ("Overview", "Career Journey", "Core Expertise", "Certifications"). This structure was chosen over a linear CV format to allow non-linear exploration, enabling a user (e.g., a recruiter) to immediately jump to the most relevant section. The "Overview" provides a high-level summary and skill cloud. "Career Journey" combines an interactive HTML timeline (click to get details) with a tenure chart. "Core Expertise" uses an accordion to manage text-heavy achievements, paired with a domain knowledge chart. "Certifications" visualizes qualifications. This task-oriented, dashboard-like structure makes the dense information from the CV highly consumable and engaging. -->
+    <!-- Visualization & Content Choices: 
+        1. Employment History -> Goal: Organize/Change -> Viz: Interactive Vertical Timeline (HTML/JS) -> Interaction: Click list item to update a separate detail panel -> Justification: Breaks up a large wall of text, allowing users to "query" the timeline for details. (Vanilla JS).
+        2. Employment Durations -> Goal: Compare -> Viz: Horizontal Bar Chart (Chart.js) -> Interaction: Hover tooltip -> Justification: Visually communicates tenure at each company, which is hard to parse from text dates. (Chart.js Canvas).
+        3. Professional Expertise -> Goal: Organize/Inform -> Viz: Accordion (HTML/JS) -> Interaction: Click header to expand/collapse content -> Justification: Manages large blocks of qualitative text, preventing user overload and allowing self-selection of topics. (Vanilla JS).
+        4. Domain Knowledge (Inferred) -> Goal: Inform/Proportion -> Viz: Doughnut Chart (Chart.js) -> Interaction: Hover tooltip -> Justification: Quickly visualizes the key business domains (Insurance, FinServices, Gov) mentioned in the summary. (Chart.js Canvas).
+        5. Certifications List -> Goal: Organize/Compare -> Viz: Bar Chart (Chart.js) -> Interaction: Hover tooltip -> Justification: Groups the 10+ certifications by category (Pega, Agile, PM) to show breadth of expertise more effectively than a long list. (Chart.js Canvas).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Profile | Purnendu Dash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        .nav-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+        }
+        .nav-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .timeline-item.active {
+            background-color: #eef2ff;
+            border-color: #4f46e5;
+            color: #4338ca;
+            font-weight: 600;
+        }
+        .timeline-item {
+            transition: all 0.2s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+        .accordion-header:hover {
+            background-color: #f9fafb;
+        }
+        .accordion-content {
+            transition: max-height 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="container max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="mb-6 pb-4 border-b border-gray-300">
+            <h1 class="text-4xl font-bold text-indigo-700">Purnendu Dash</h1>
+            <p class="text-xl text-gray-600">Senior Solutions Architect / Technical Delivery Leader</p>
+			<p class="text-xl text-gray-600"><a href="mailto:purnendu.dash@gmail.com">purnendu.dash@gmail.com</a> </p>
+        </header>
+
+        <nav class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="flex flex-wrap space-x-1 sm:space-x-2 p-2">
+                <button class="nav-btn flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 rounded-md text-gray-700 font-medium hover:bg-gray-50" data-page="overview">
+                    Overview
+                </button>
+                <button class="nav-btn flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 rounded-md text-gray-700 font-medium hover:bg-gray-50" data-page="journey">
+                    Career Journey
+                </button>
+                <button class="nav-btn flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 rounded-md text-gray-700 font-medium hover:bg-gray-50" data-page="expertise">
+                    Core Expertise
+                </button>
+                <button class="nav-btn flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 rounded-md text-gray-700 font-medium hover:bg-gray-50" data-page="certs">
+                    Certifications
+                </button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="page-overview" class="page-content space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-indigo-700 mb-3">Professional Summary</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        A highly accomplished Senior Solutions Architect and Technical Delivery Leader with over 20 years of experience, specializing as the Design Authority for flagship Digital Transformation and new Enterprise CRM/BPM platform modernization programs.
+                        I possess deep CRM/BPM solution expertise leveraging Pega Infinity as a strategic backbone for large-scale, end-to-end customer-facing digital applications. Proven success as a Trusted Advisory Leader, guiding the pre and post-sale design journey, contributing to business cases, and managing the process through system cutover and legacy decommissioning.
+                        Expert in providing Senior Leadership and Mentorship to multi-functional global teams (up to 25 resources), driving architectural velocity, standardisation, and maturing engineering practices (CI/CD, DevSecOps). Extensive experience building solutions using AI/ML technologies and Intelligent Process Automation (RPA/RDA).
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-lg shadow-md text-center">
+                        <h3 class="text-3xl font-bold text-indigo-600">20+</h3>
+                        <p class="text-gray-600">Years Experience</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-md text-center">
+                        <h3 class="text-3xl font-bold text-indigo-600">15+</h3>
+                        <p class="text-gray-600">Years Leadership</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-md text-center">
+                        <h3 class="text-3xl font-bold text-indigo-600">LSA</h3>
+                        <p class="text-gray-600">Pega Lead Architect</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-lg shadow-md text-center">
+                        <h3 class="text-3xl font-bold text-indigo-600">PMP®</h3>
+                        <p class="text-gray-600">Project Mgmt. Pro</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Core Competencies</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">Digital Transformation</span>
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">CRM/BPM Architecture</span>
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">Pega Infinity</span>
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">Design Authority</span>
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">AI/ML Automation</span>
+                        <span class="bg-indigo-100 text-indigo-800 rounded-full px-4 py-1 text-sm font-medium">Team Leadership & Mentorship</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">Integration Strategy</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">API-Led Architecture</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">Legacy Decommissioning</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">Risk & Governance</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">CPS 230/231</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">CI/CD & DevSecOps</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">AWS & Azure</span>
+                        <span class="bg-gray-100 text-gray-800 rounded-full px-4 py-1 text-sm font-medium">RPA/RDA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-journey" class="page-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <p class="text-gray-700 leading-relaxed">
+                        This section provides an interactive overview of my 20+ year career. Click on any role in the timeline on the left to see the detailed responsibilities and achievements for that position. Below the timeline, a chart visualizes my tenure at each major company.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Career Timeline</h2>
+                        <ul class="space-y-2">
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="tal">TAL Australia</button></li>
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="cba">Commonwealth Bank</button></li>
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="doj">Dept. of Justice, NSW</button></li>
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="baxter">Baxter Healthcare</button></li>
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="aig">AIG Japan, Tokyo</button></li>
+                            <li><button class="timeline-item w-full text-left p-3 border-l-4 border-gray-200 hover:bg-gray-50 rounded-r-md" data-job-id="virtusa">Virtusa India</button></li>
+                        </ul>
+                    </div>
+
+                    <div id="job-details" class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md min-h-[400px]">
+                        <p class="text-gray-500 text-center mt-16">Select a role from the timeline to see details here.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Experience by Company</h2>
+                    <div class="chart-container h-96 max-h-[400px] w-full max-w-4xl mx-auto">
+                        <canvas id="tenureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-expertise" class="page-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <p class="text-gray-700 leading-relaxed">
+                        This section provides a deeper dive into my key professional competencies and achievements. Click on any heading to expand the panel and read the full details. The chart on the side illustrates my primary areas of domain expertise.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div id="accordion-container" class="lg:col-span-2 bg-white rounded-lg shadow-md divide-y divide-gray-200">
+                    </div>
+                    
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Domain Knowledge</h2>
+                            <div class="chart-container h-64 max-h-[300px] w-full max-w-sm mx-auto">
+                                <canvas id="domainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-certs" class="page-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <p class="text-gray-700 leading-relaxed">
+                        My qualifications are built on a foundation of formal education, industry-leading certifications, and a commitment to continuous learning. The chart highlights the breadth of my certifications by category, with lists for education and awards below.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Certifications by Category</h2>
+                        <div class="chart-container h-96 max-h-[400px] w-full max-w-xl mx-auto">
+                            <canvas id="certsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Education</h2>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="text-indigo-600 mr-3 mt-1">&#9679;</span>
+                                    <div>
+                                        <h3 class="font-semibold">Leadership Professional Development Program</h3>
+                                        <p class="text-gray-600">La Trobe Business School, La Trobe University (2020)</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-indigo-600 mr-3 mt-1">&#9679;</span>
+                                    <div>
+                                        <h3 class="font-semibold">Bachelor of Technology, Computer Science & Eng.</h3>
+                                        <p class="text-gray-600">Biju Patnaik University of Technology (2000 - 2004)</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Awards & Recognition</h2>
+                            <ul class="space-y-2 text-gray-700">
+                                <li>&#10022; Multiple Hackathon Rewards @ TAL (2021, 2023, 2024)</li>
+                                <li>&#10022; FROG (For Recognition Of Greatness) Reward @ Virtusa (2017)</li>
+                                <li>&#10022; Quarterly Best Performer Award @ Virtusa (Q3-2017)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const jobData = {
+                tal: {
+                    title: "Development Manager, Workflow Platform",
+                    company: "TAL Australia, Sydney (Dec-2019 ~ Present)",
+                    points: [
+                        "Owned end-to-end design of the new Enterprise CRM/BPM platform (Pega SaaS).",
+                        "Acted as Design Authority, maintaining whole-of-program solution architecture.",
+                        "Authored key architecture artifacts (Solution Canvas, HLSD) and supported business case development.",
+                        "Successfully led data migration, cutover planning, and system retirement for greenfield CRM/BPM solutions and two major business acquisition/integration programs.",
+                        "Led and mentored architects and engineers across multiple digital squads (10-12 resources).",
+                        "Drove architectural reviews, embedded security, scalability, and performance, ensuring compliance with enterprise standards."
+                    ]
+                },
+                cba: {
+                    title: "Senior Architect / Lead Engineer",
+                    company: "Commonwealth Bank (via Cognizant/Virtusa) (Aug-2017 ~ Dec-2019)",
+                    points: [
+                        "Led Systems Architecture for a major transformation project (BizExpress) to streamline complex business lending.",
+                        "Built Conceptual and High-Level Solution Design for the BizExpress App.",
+                        "Developed a Risk and Securities solution framework.",
+                        "Architected reusable integration patterns (MQ, REST, web services) between Pega, middleware, and the core BPM platform.",
+                        "Ensured platform designs maintained compliance with internal enterprise standards and regulatory requirements (SOX, Audit).",
+                        "Provided technical leadership and mentorship to a team of 4 engineers."
+                    ]
+                },
+                doj: {
+                    title: "Lead Consultant",
+                    company: "Department of Justice, NSW (via Infosys) (Mar-2016 ~ Jul-2017)",
+                    points: [
+                        "Reengineered existing applications into a Pega-based case management solution.",
+                        "Delivered Initial Proof of Concept (PoC).",
+                        "Integrated the solution with a broader enterprise API and cloud infrastructure.",
+                        "Developed front-end UI/UX framework standards.",
+                        "Served as the primary technical liaison between the delivery team and client executives.",
+                        "Designed solutions for data migration and built a custom reporting/data-encryption framework."
+                    ]
+                },
+                baxter: {
+                    title: "Project Leader",
+                    company: "Baxter Healthcare, APAC (via Wipro) (Jul-2010 ~ Mar-2016)",
+                    points: [
+                        "Served as an ITIL Service Delivery Manager for non-ERP applications (Pega, .Net, Java, Salesforce).",
+                        "Managed a team of 8 L2 engineers for Incident, Problem, and SLA management.",
+                        "Led the transition to steady-state support for 18 applications, managing service discovery and catalogue.",
+                        "Assisted in SOX and internal/external compliance audits.",
+                        "As Pega Architect, led a team of 2 engineers to deliver minor enhancements.",
+                        "Supported the Wipro pre-sales team for various RFP and RFIS."
+                    ]
+                },
+                aig: {
+                    title: "Module Leader",
+                    company: "AIG Japan, Tokyo (via Mphasis) (Jan-2006 ~ Jul-2010)",
+                    points: [
+                        "Led end-to-end development for Claims, Policy Administration, Pricing, and Product Design systems on Pega PRPC.",
+                        "Built a Claims Payment guidance system.",
+                        "Created a Pega Product Configurator-based framework for generating Product and Pricing specifications.",
+                        "Led a team to streamline the pre-sales and negotiation phases of Auto, Commercial, and Casualty Insurance products."
+                    ]
+                },
+                virtusa: {
+                    title: "Software Engineer",
+                    company: "Virtusa India Pvt. Ltd., Hyderabad (Dec-2004 ~ Jan-2006)",
+                    points: [
+                        "Worked on the Pega Rules Process Commander (PRPC) engine for PEGASYSTEMS Inc.",
+                        "Acted as a Java & Pega Developer, working on enhancements and fixing defects in new PRPC builds.",
+                        "Built various vertical applications/solutions focusing on integration components.",
+                        "Worked extensively on MQ, SOAP, and SQL protocols."
+                    ]
+                }
+            };
+
+            const expertiseData = [
+                {
+                    title: "CRM/BPM Architecture & Design Authority",
+                    content: "Expertise in end-to-end solution design for new CRM/BPM platforms. Proven ability to define and quantify solutions, maintaining design integrity from discovery through implementation. Deep domain knowledge in Insurance, Financial Services, and Government."
+                },
+                {
+                    title: "Integration Strategy & Reusable Patterns",
+                    content: "Solid experience in architecting data models, reusable integration patterns, and system interfaces. Extensive experience integrating Pega solutions with broader enterprise APIs and infrastructure (e.g., Microservices, .Net, JAVA, MQ, SOAP, SQL). Experience designing API-led strategies."
+                },
+                {
+                    title: "Solution Discovery, Transition & Cutover",
+                    content: "Proven experience in solution discovery, platform build, and system cutovers for major transformation projects. Successfully led data migration, cutover planning, and legacy system retirement (decommissioning legacy systems for 2 large integration/acquisition programs)."
+                },
+                {
+                    title: "Leadership, Delivery & Team Enablement",
+                    content: "15+ years leading, mentoring, and managing cross-functional global teams. Provided technical guidance to architects, developers, BAs, and testers across the SDLC. Expert in driving delivery against roadmap targets and building high-performing engineering capabilities."
+                },
+                {
+                    title: "Risk, Quality & Governance",
+                    content: "Experience identifying risks, defining mitigation strategies, and ensuring adherence to engineering best practices. Assisted platforms navigate regulatory and compliance standards (SOX, LICOP, CPS 231/230). Well-versed in ITSM and implementing ITIL V3 framework."
+                },
+                {
+                    title: "AI/ML & Workflow Automation",
+                    content: "Sound experience in AI/ML augmented Intelligent Process Automation solutions (RPA/RDA). Successfully delivered document intelligence systems and introduced AI and Email Bots to reduce human effort by 5+ FTE."
+                },
+                {
+                    title: "Cloud & Technology Stack",
+                    content: "Knowledge of Azure and AWS cloud infrastructure. Certified Pega Lead Systems Architect, PMI-Project Management Professional (PMP), and Advanced Certified ScrumMaster (A-CSM)."
+                }
+            ];
+
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const pages = document.querySelectorAll('.page-content');
+            
+            navBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pageId = btn.getAttribute('data-page');
+                    
+                    pages.forEach(page => {
+                        page.classList.add('hidden');
+                    });
+                    
+                    document.getElementById(`page-${pageId}`).classList.remove('hidden');
+                    
+                    navBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            navBtns[0].click();
+
+            const jobLinks = document.querySelectorAll('.timeline-item');
+            const jobDetailEl = document.getElementById('job-details');
+            
+            jobLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const jobId = link.getAttribute('data-job-id');
+                    const data = jobData[jobId];
+                    
+                    let pointsHtml = data.points.map(point => 
+                        `<li class="flex items-start">
+                            <span class="text-indigo-500 mr-3 mt-1.5 text-xs">&#9656;</span>
+                            <span>${point}</span>
+                        </li>`
+                    ).join('');
+                    
+                    jobDetailEl.innerHTML = `
+                        <h3 class="text-2xl font-semibold text-indigo-700 mb-1">${data.title}</h3>
+                        <p class="text-gray-600 font-medium mb-4">${data.company}</p>
+                        <ul class="space-y-2 text-gray-700 leading-relaxed">
+                            ${pointsHtml}
+                        </ul>
+                    `;
+                    
+                    jobLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+            
+            jobLinks[0].click();
+
+            const accordionContainer = document.getElementById('accordion-container');
+            expertiseData.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'accordion-item';
+                itemEl.innerHTML = `
+                    <h3 class="accordion-header flex justify-between items-center p-4 sm:p-5">
+                        <span class="text-lg font-medium text-indigo-700">${item.title}</span>
+                        <span class="text-indigo-500 text-xl font-bold transform transition-transform duration-200">+</span>
+                    </h3>
+                    <div class="accordion-content hidden px-4 sm:px-5 pb-5 text-gray-700 leading-relaxed">
+                        ${item.content}
+                    </div>
+                `;
+                accordionContainer.appendChild(itemEl);
+            });
+            
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('span:last-child');
+                    
+                    const wasOpen = !content.classList.contains('hidden');
+                    
+                    document.querySelectorAll('.accordion-content').forEach(c => c.classList.add('hidden'));
+                    document.querySelectorAll('.accordion-header span:last-child').forEach(i => i.textContent = '+');
+                    
+                    if (!wasOpen) {
+                        content.classList.remove('hidden');
+                        icon.textContent = '-';
+                    }
+                });
+            });
+
+            const tenureCtx = document.getElementById('tenureChart').getContext('2d');
+            new Chart(tenureCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Baxter Healthcare', 'AIG Japan', 'Virtusa India', 'Dept. of Justice', 'Commonwealth Bank', 'TAL Australia'],
+                    datasets: [{
+                        label: 'Years of Experience',
+                        data: [5.7, 4.5, 1.1, 1.3, 1.8, 5.0],
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} years`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Years'
+                            }
+                        }
+                    }
+                }
+            });
+
+            const domainCtx = document.getElementById('domainChart').getContext('2d');
+            new Chart(domainCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Insurance', 'Financial Services', 'Government','Healthcare/Manufacturing'],
+                    datasets: [{
+                        data: [40, 20, 20,20],
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.7)',
+                            'rgba(99, 102, 241, 0.7)',
+                            'rgba(129, 140, 248, 0.7)',
+							'rgba(165, 180, 252, 0.7)'  // Light Lavender
+
+                        ],
+                        borderColor: [
+                            'rgba(79, 70, 229, 1)',
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(129, 140, 248, 1)',
+						    'rgba(165, 180, 252, 1)'
+
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                    }
+                }
+            });
+
+            const certsCtx = document.getElementById('certsChart').getContext('2d');
+            new Chart(certsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pega', 'Agile (Scrum)', 'Project Mgmt (PMI)', 'IT Service Mgmt (ITIL)'],
+                    datasets: [{
+                        label: 'Number of Certifications',
+                        data: [6, 2, 1, 1],
+                        backgroundColor: [
+                            'rgba(79, 70, 229, 0.7)',
+                            'rgba(99, 102, 241, 0.7)',
+                            'rgba(129, 140, 248, 0.7)',
+                            'rgba(165, 180, 252, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(79, 70, 229, 1)',
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(129, 140, 248, 1)',
+                            'rgba(165, 180, 252, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
