@@ -31,7 +31,7 @@ This interactive CV features:
 
 ## 📄 License
 
-© 2024 Purnendu Dash. All rights reserved.
+© 2025 Purnendu Dash. All rights reserved.
 
 ## 📧 Contact
 
